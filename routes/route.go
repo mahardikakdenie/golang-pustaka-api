@@ -29,4 +29,5 @@ func Router(db *gorm.DB, router gin.IRouter) {
 	book.DELETE("/:id", bookController.Destroy)
 
 	user.GET("/", userController.Index)
+	user.POST("/", userController.Create)
 }

@@ -8,6 +8,7 @@ import (
 
 type Repository interface {
 	FindAll() ([]entity.User, error)
+	Create(user entity.User) (entity.User, error)
 }
 
 type repository struct {
@@ -20,7 +21,12 @@ func NewRepository(db *gorm.DB) *repository {
 
 func (r *repository) FindAll() ([]entity.User, error) {
 	var users []entity.User
-	err := r.db.Preload("Book.User").Find(&users).Error
+	err := r.db.Preload("Book").Find(&users).Error
 
+	return users, err
+}
+
+func (r *repository) Create(users entity.User) (entity.User, error) {
+	err := r.db.Create(&users).Error
 	return users, err
 }
