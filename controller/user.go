@@ -1,8 +1,11 @@
 package controller
 
 import (
+	"fmt"
 	"net/http"
+	"pustaka-api/entity"
 	"pustaka-api/user"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
@@ -84,6 +87,179 @@ func (controller *userController) Create(c *gin.Context) {
 	})
 }
 
+func (controller *userController) Show(c *gin.Context) {
+	idString := c.Param("id")
+	id, _ := strconv.Atoi(idString)
+
+	users, err := controller.userService.FindById(id)
+	if err != nil {
+		var meta = gin.H{
+			"status":  false,
+			"message": err.Error(),
+		}
+
+		var data = gin.H{}
+		c.JSON(http.StatusBadRequest, gin.H{
+			"meta": meta,
+			"data": data,
+		})
+		return
+	}
+
+	if users.ID == 0 {
+		var meta = gin.H{
+			"status":  false,
+			"message": "User not found",
+		}
+
+		c.JSON(http.StatusNotFound, gin.H{
+			"meta": meta,
+			"data": gin.H{},
+		})
+
+		return
+	}
+
+	var bookResponse user.UserResponse
+	bookResponse = user.UserResponse{
+		Id:    int(users.ID),
+		Name:  users.Name,
+		Email: users.Email,
+		Book:  users.Book,
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"meta": gin.H{
+			"status":  true,
+			"message": "Success",
+		},
+		"data": bookResponse,
+	})
+}
+
+func (controller *userController) Update(c *gin.Context) {
+	idString := c.Param("id")
+	id, _ := strconv.Atoi(idString)
+
+	userId, _ := controller.userService.FindById(id)
+
+	password := c.Request.FormValue("password")
+	name := c.Request.FormValue("name")
+	email := c.Request.FormValue("email")
+
+	var usersInput user.UserRequest
+	newPassword, _ := hashPassword(checkerPassword(userId, password))
+
+	usersInput = user.UserRequest{
+		Name:     checkerName(userId, name),
+		Email:    checkerEmail(userId, email),
+		Password: newPassword,
+	}
+
+	user, err := controller.userService.Update(usersInput, id)
+
+	if err != nil {
+		var meta = gin.H{
+			"status":  false,
+			"message": err.Error(),
+		}
+
+		var data = gin.H{}
+		c.JSON(http.StatusBadRequest, gin.H{
+			"meta": meta,
+			"data": data,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data": user,
+		"meta": gin.H{
+			"status":  true,
+			"message": "Success",
+		},
+	})
+}
+
+func (controller *userController) Destroy(c *gin.Context) {
+	idString := c.Param("id")
+	id, _ := strconv.Atoi(idString)
+
+	user, _ := controller.userService.FindById(id)
+
+	user_delete, _ := controller.userService.Destroy(id)
+
+	if user.ID == 0 {
+		var meta = gin.H{
+			"status":  false,
+			"message": "User not found",
+		}
+		c.JSON(http.StatusNotFound, gin.H{
+			"meta": meta,
+			"data": gin.H{},
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"meta": gin.H{
+			"status":  true,
+			"message": "Success",
+		},
+		"data": user_delete,
+	})
+}
+
+func (controller *userController) Login(c *gin.Context) {
+	email := c.Request.FormValue("email")
+	password := c.Request.FormValue("password")
+
+	userByEmail, err := controller.userService.FindByEmail(email)
+
+	fmt.Println("Password => ", userByEmail.Password)
+
+	if err != nil {
+		var meta = gin.H{
+			"status":  false,
+			"message": err.Error(),
+		}
+
+		var data = gin.H{}
+		c.JSON(http.StatusBadRequest, gin.H{
+			"meta": meta,
+			"data": data,
+		})
+		return
+	}
+
+	isAccount := CheckPasswordHash(password, userByEmail.Password)
+
+	fmt.Print(isAccount)
+
+	if !isAccount {
+		var meta = gin.H{
+			"status":  false,
+			"message": "Wrong password",
+		}
+
+		var data = gin.H{}
+		c.JSON(http.StatusBadRequest, gin.H{
+			"meta": meta,
+			"data": data,
+		})
+		return
+	}
+
+	user, err := controller.userService.Login(email, userByEmail.Password)
+
+	c.JSON(http.StatusOK, gin.H{
+		"meta": gin.H{
+			"status":  true,
+			"message": "Success",
+		},
+		"data": user,
+	})
+}
+
 //
 
 func hashPassword(password string) (string, error) {
@@ -92,7 +268,46 @@ func hashPassword(password string) (string, error) {
 	return string(bytes), err
 }
 
-func CheckPasswordHash(password, hash string) bool {
+func CheckPasswordHash(password string, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil
+}
+
+func checkerName(form entity.User, name string) string {
+	if name != "" {
+		form.Name = name
+	}
+
+	if name == "" {
+		name = form.Name
+		form.Name = name
+	}
+
+	return form.Name
+}
+
+func checkerEmail(form entity.User, email string) string {
+	if email != "" {
+		form.Email = email
+	}
+
+	if email == "" {
+		email = form.Email
+		form.Email = email
+	}
+
+	return form.Email
+}
+
+func checkerPassword(form entity.User, password string) string {
+	if password != "" {
+		form.Password = password
+	}
+
+	if password == "" {
+		password = form.Password
+		form.Password = password
+	}
+
+	return form.Password
 }

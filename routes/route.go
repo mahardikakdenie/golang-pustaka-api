@@ -30,4 +30,9 @@ func Router(db *gorm.DB, router gin.IRouter) {
 
 	user.GET("/", userController.Index)
 	user.POST("/", userController.Create)
+	user.GET("/:id", userController.Show)
+	user.PATCH("/:id", userController.Update)
+	user.DELETE("/:id", userController.Destroy)
+
+	user.POST("/login", userController.Login)
 }
