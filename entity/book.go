@@ -20,14 +20,3 @@ type Book struct {
 	UpdatedAt   time.Time
 	DeletedAt   *time.Time `json:"deleted_at"`
 }
-
-type User struct {
-	gorm.Model
-	Name                string                `json:"name"`
-	Email               string                `json:"email"`
-	Password            string                `json:"password"`
-	Book                []Book                `json:"book"`
-	AuthenticationToken []AuthenticationToken `json:"authentication_token"`
-	CreatedAt           time.Time
-	UpdatedAt           time.Time
-}

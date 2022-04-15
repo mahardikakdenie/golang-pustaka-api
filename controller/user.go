@@ -40,6 +40,7 @@ func (controler *userController) Index(c *gin.Context) {
 			Name:  v.Name,
 			Email: v.Email,
 			Book:  v.Book,
+			Token: v.AuthenticationToken,
 		})
 	}
 	var meta = gin.H{

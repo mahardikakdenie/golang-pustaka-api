@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"fmt"
 	"net/http"
 	"pustaka-api/auth"
 	"strings"
@@ -27,8 +26,6 @@ func MyMiddleware(service auth.Service) gin.HandlerFunc {
 		expiryTime, _ := time.Parse(timeLayout, token_.ExpiresAt.Format("2006-01-02 15:04:05"))
 		currentTime, _ := time.Parse(timeLayout, time.Now().Format(timeLayout))
 
-		fmt.Println("token Middleware => ", tokens)
-
 		if tokens == "" || token_.CreatedAt.IsZero() || token_.ExpiresAt.IsZero() || token_.UserId == 0 {
 			ctx.JSON(http.StatusUnauthorized, gin.H{
 				"message": "Unauthorized",
@@ -38,8 +35,6 @@ func MyMiddleware(service auth.Service) gin.HandlerFunc {
 			return
 		}
 
-		fmt.Println("kadaluars => ", expiryTime)
-		fmt.Println("Now => ", currentTime)
 		if expiryTime.Before(currentTime) {
 			ctx.JSON(http.StatusUnauthorized, gin.H{
 				"meta": gin.H{
@@ -51,6 +46,7 @@ func MyMiddleware(service auth.Service) gin.HandlerFunc {
 			ctx.Abort()
 			return
 		}
+
 		if err != nil {
 			ctx.JSON(http.StatusUnauthorized, gin.H{
 				"message": "Unauthorized",
