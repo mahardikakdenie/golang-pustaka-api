@@ -18,9 +18,11 @@ func main() {
 	if err != nil {
 		log.Fatal("DB connection error: ", err)
 	}
+
 	db.AutoMigrate(&entity.Book{})
 	db.AutoMigrate(&entity.User{})
 	db.AutoMigrate(&entity.AuthenticationToken{})
+
 	routes.Router(db, router)
 	router.Run()
 }
