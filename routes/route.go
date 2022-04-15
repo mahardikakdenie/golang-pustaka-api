@@ -1,8 +1,10 @@
 package routes
 
 import (
+	"pustaka-api/auth"
 	"pustaka-api/book"
 	"pustaka-api/controller"
+	"pustaka-api/middleware"
 	"pustaka-api/user"
 
 	"github.com/gin-gonic/gin"
@@ -18,9 +20,16 @@ func Router(db *gorm.DB, router gin.IRouter) {
 	userService := user.NewUserService(userRepository)
 	userController := controller.NewUserController(userService)
 
+	authRepository := auth.NewRepository(db)
+	authService := auth.NewService(authRepository)
+	authController := controller.NewAuthController(authService)
+
+	middleware := middleware.MyMiddleware(authService)
+
 	v1 := router.Group("/v1")
-	book := v1.Group("/book")
-	user := v1.Group("/user")
+	book := v1.Group("/book").Use(middleware)
+	user := v1.Group("/user").Use(middleware)
+	auth := v1.Group("/auth")
 
 	book.GET("/", bookController.Index)
 	book.POST("/", bookController.PostBookHandler)
@@ -34,5 +43,8 @@ func Router(db *gorm.DB, router gin.IRouter) {
 	user.PATCH("/:id", userController.Update)
 	user.DELETE("/:id", userController.Destroy)
 
-	user.POST("/login", userController.Login)
+	// user.POST("/login", userController.Login)
+
+	auth.POST("/login", authController.Login)
+	auth.POST("/auth", authController.ValidateToken)
 }

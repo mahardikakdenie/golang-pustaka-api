@@ -20,6 +20,7 @@ func main() {
 	}
 	db.AutoMigrate(&entity.Book{})
 	db.AutoMigrate(&entity.User{})
+	db.AutoMigrate(&entity.AuthenticationToken{})
 	routes.Router(db, router)
 	router.Run()
 }
