@@ -8,6 +8,8 @@ type Service interface {
 	GeneratedToken(tokenRequest AuthRequest) (entity.AuthenticationToken, error)
 	ValidateToken(token string) (entity.AuthenticationToken, error)
 	FindByEmail(email string) (entity.User, error)
+	Register(user UserRequest) (entity.User, error)
+	Destroy(token string) (entity.AuthenticationToken, error)
 }
 
 type service struct {
@@ -38,4 +40,19 @@ func (s *service) FindByEmail(email string) (entity.User, error) {
 
 func (s *service) ValidateToken(token string) (entity.AuthenticationToken, error) {
 	return s.repository.ValidateToken(token)
+}
+
+func (s *service) Register(request UserRequest) (entity.User, error) {
+	var user entity.User
+	user.ID = uint(request.ID)
+	user.Name = request.Name
+	user.Email = request.Email
+	user.Password = request.Password
+
+	return s.repository.Register(user)
+}
+
+func (s *service) Destroy(token string) (entity.AuthenticationToken, error) {
+	tokens, _ := s.repository.ValidateToken(token)
+	return s.repository.DestroyToken(tokens)
 }

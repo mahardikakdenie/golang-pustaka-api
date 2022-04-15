@@ -1,7 +1,6 @@
 package book
 
 import (
-	"encoding/json"
 	entity "pustaka-api/entity"
 )
 
@@ -9,7 +8,7 @@ type Service interface {
 	FindAll(entity string) ([]entity.Book, error)
 	FindById(id int) (entity.Book, error)
 	Create(book BookRequest) (entity.Book, error)
-	Update(id int, book BookRequest) (entity.Book, error)
+	Update(book BookRequest, id int) (entity.Book, error)
 	Destroy(id int) (entity.Book, error)
 }
 
@@ -42,20 +41,15 @@ func (s *service) Create(book BookRequest) (entity.Book, error) {
 	return books, err
 }
 
-func (s *service) Update(id int, book BookRequest) (entity.Book, error) {
+func (s *service) Update(book BookRequest, id int) (entity.Book, error) {
 	indexBook, _ := s.repository.FindById(id)
 
-	titleBook := ternaryTitle(book, indexBook)
-	priceBook := ternaryPrice(book, indexBook)
-	substitleBook := ternarySubstitle(book, indexBook)
-	ratingBook := ternaryRating(book, indexBook)
-	descriptionBook := ternaryDescription(book, indexBook)
-
-	indexBook.Title = titleBook
-	indexBook.Price = priceBook
-	indexBook.Substitle = substitleBook
-	indexBook.Rating = ratingBook
-	indexBook.Description = descriptionBook
+	indexBook.Title = book.Title
+	indexBook.Price = book.Price
+	indexBook.Substitle = book.Substitle
+	indexBook.Rating = book.Rating
+	indexBook.Description = book.Description
+	indexBook.UserId = book.UserId
 
 	updateBook, err := s.repository.Update(indexBook)
 
@@ -68,39 +62,4 @@ func (s *service) Destroy(id int) (entity.Book, error) {
 
 	return newBook, err
 
-}
-
-func ternaryTitle(request BookRequest, indexBook entity.Book) string {
-	if request.Title != "" {
-		indexBook.Title = request.Title
-	}
-	return indexBook.Title
-}
-
-func ternaryPrice(request BookRequest, indexBook entity.Book) json.Number {
-	if request.Price != "" {
-		indexBook.Price = request.Price
-	}
-	return indexBook.Price
-}
-
-func ternarySubstitle(request BookRequest, indexBook entity.Book) string {
-	if request.Substitle != "" {
-		indexBook.Substitle = request.Substitle
-	}
-	return indexBook.Substitle
-}
-
-func ternaryRating(request BookRequest, indexBook entity.Book) json.Number {
-	if request.Rating != "" {
-		indexBook.Rating = request.Rating
-	}
-	return indexBook.Rating
-}
-
-func ternaryDescription(request BookRequest, indexBook entity.Book) string {
-	if request.Description != "" {
-		indexBook.Description = request.Description
-	}
-	return indexBook.Description
 }

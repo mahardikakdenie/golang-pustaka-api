@@ -32,6 +32,7 @@ func MyMiddleware(service auth.Service) gin.HandlerFunc {
 		if tokens == "" || token_.CreatedAt.IsZero() || token_.ExpiresAt.IsZero() || token_.UserId == 0 {
 			ctx.JSON(http.StatusUnauthorized, gin.H{
 				"message": "Unauthorized",
+				"status":  false,
 			})
 			ctx.Abort()
 			return

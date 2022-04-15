@@ -33,7 +33,7 @@ func Router(db *gorm.DB, router gin.IRouter) {
 
 	book.GET("/", bookController.Index)
 	book.POST("/", bookController.PostBookHandler)
-	book.PUT("/:id", bookController.Update)
+	book.PATCH("/:id", bookController.Update)
 	book.GET("/:id", bookController.Show)
 	book.DELETE("/:id", bookController.Destroy)
 
@@ -43,8 +43,7 @@ func Router(db *gorm.DB, router gin.IRouter) {
 	user.PATCH("/:id", userController.Update)
 	user.DELETE("/:id", userController.Destroy)
 
-	// user.POST("/login", userController.Login)
-
 	auth.POST("/login", authController.Login)
-	auth.POST("/auth", authController.ValidateToken)
+	auth.POST("/register", authController.Register)
+	auth.POST("/logout", authController.Logout)
 }

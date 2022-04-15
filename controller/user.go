@@ -3,12 +3,10 @@ package controller
 import (
 	"fmt"
 	"net/http"
-	"pustaka-api/entity"
 	"pustaka-api/user"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type userController struct {
@@ -261,53 +259,3 @@ func (controller *userController) Login(c *gin.Context) {
 }
 
 //
-
-func hashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
-
-	return string(bytes), err
-}
-
-func CheckPasswordHash(password string, hash string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-	return err == nil
-}
-
-func checkerName(form entity.User, name string) string {
-	if name != "" {
-		form.Name = name
-	}
-
-	if name == "" {
-		name = form.Name
-		form.Name = name
-	}
-
-	return form.Name
-}
-
-func checkerEmail(form entity.User, email string) string {
-	if email != "" {
-		form.Email = email
-	}
-
-	if email == "" {
-		email = form.Email
-		form.Email = email
-	}
-
-	return form.Email
-}
-
-func checkerPassword(form entity.User, password string) string {
-	if password != "" {
-		form.Password = password
-	}
-
-	if password == "" {
-		password = form.Password
-		form.Password = password
-	}
-
-	return form.Password
-}

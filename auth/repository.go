@@ -11,6 +11,8 @@ type Repository interface {
 	ValidateToken(token string) (entity.AuthenticationToken, error)
 	FindByToken(token string) (entity.AuthenticationToken, error)
 	FindByEmail(email string) (entity.User, error)
+	Register(user entity.User) (entity.User, error)
+	DestroyToken(token entity.AuthenticationToken) (entity.AuthenticationToken, error)
 }
 
 type repository struct {
@@ -42,4 +44,14 @@ func (r *repository) FindByToken(token string) (entity.AuthenticationToken, erro
 	var tokenEntity entity.AuthenticationToken
 	err := r.db.Where("auth_token = ?", token).Find(&tokenEntity).Error
 	return tokenEntity, err
+}
+
+func (r *repository) Register(user entity.User) (entity.User, error) {
+	err := r.db.Create(&user).Error
+	return user, err
+}
+
+func (r *repository) DestroyToken(token entity.AuthenticationToken) (entity.AuthenticationToken, error) {
+	err := r.db.Delete(&token).Error
+	return token, err
 }

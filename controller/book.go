@@ -1,9 +1,10 @@
 package controller
 
 import (
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"pustaka-api/book"
-	"pustaka-api/entity"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -56,6 +57,7 @@ func (controller *bookController) Show(c *gin.Context) {
 	id, _ := strconv.Atoi(idString)
 
 	books, err := controller.bookService.FindById(id)
+	fmt.Println("name =>", books.Title)
 	if err != nil {
 		var meta = gin.H{
 			"status":  false,
@@ -146,22 +148,40 @@ func (s *bookController) Update(c *gin.Context) {
 	idString := c.Param("id")
 	id, _ := strconv.Atoi(idString)
 
-	var BookInput book.BookRequest
-	err := c.ShouldBindJSON(&BookInput)
-	if err != nil {
-		var errorMassages []string
-		for _, e := range err.(validator.ValidationErrors) {
-			errorMassage := e.Field() + " " + e.Tag() + " " + e.ActualTag()
-			errorMassages = append(errorMassages, errorMassage)
+	bookId, err := s.bookService.FindById(id)
+
+	if bookId.ID == 0 {
+		var meta = gin.H{
+			"status":  false,
+			"message": "Book not found",
 		}
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-			"e":     errorMassages,
+
+		c.JSON(http.StatusNotFound, gin.H{
+			"meta": meta,
+			"data": gin.H{},
 		})
 		return
 	}
 
-	book, err := s.bookService.Update(id, BookInput)
+	var BookInput book.BookRequest
+	title := c.Request.FormValue("title")
+	price := c.Request.FormValue("price")
+	substitle := c.Request.FormValue("substitle")
+	description := c.Request.FormValue("description")
+	rating := c.Request.FormValue("rating")
+	userId := c.Request.FormValue("user_id")
+	user_id, _ := strconv.Atoi(userId)
+
+	BookInput = book.BookRequest{
+		Title:       ternaryTitle(title, bookId),
+		Price:       ternaryPrice(json.Number(price), bookId),
+		Substitle:   ternarySubstitle(substitle, bookId),
+		Description: ternaryDescription(description, bookId),
+		Rating:      ternaryRating(json.Number(rating), bookId),
+		UserId:      ternaryUserId(user_id, bookId),
+	}
+
+	book, err := s.bookService.Update(BookInput, id)
 
 	if err != nil {
 		var errorMassages []string
@@ -182,9 +202,11 @@ func (s *bookController) Update(c *gin.Context) {
 		"message": "Book updated successfully",
 	}
 
+	dataBook := responses(book)
+
 	c.JSON(http.StatusOK, gin.H{
 		"meta": meta,
-		"data": book,
+		"data": dataBook,
 	})
 }
 
@@ -236,38 +258,4 @@ func (controller *bookController) Destroy(c *gin.Context) {
 		"meta": meta,
 		"data": data,
 	})
-}
-
-func responses(books entity.Book) book.BookResponse {
-	var bookResponseWithUser book.BookResponse
-
-	if books.UserId != 0 {
-		bookResponseWithUser = book.BookResponse{
-			Id:          int(books.ID),
-			Title:       books.Title,
-			Price:       books.Price,
-			Rating:      books.Rating,
-			Substitle:   books.Substitle,
-			Description: books.Description,
-			UserId:      int(books.UserId),
-			User:        books.User,
-			CreatedAt:   books.CreatedAt,
-			UpdatedAt:   books.UpdatedAt,
-		}
-	} else {
-		bookResponseWithUser = book.BookResponse{
-			Id:          int(books.ID),
-			Title:       books.Title,
-			Price:       books.Price,
-			Rating:      books.Rating,
-			Substitle:   books.Substitle,
-			Description: books.Description,
-			UserId:      int(books.UserId),
-			CreatedAt:   books.CreatedAt,
-			UpdatedAt:   books.UpdatedAt,
-		}
-	}
-
-	return bookResponseWithUser
-
 }

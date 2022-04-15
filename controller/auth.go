@@ -49,7 +49,7 @@ func (controller *authController) Login(c *gin.Context) {
 	}
 	authToken := base64.URLEncoding.EncodeToString(randomToken)
 	token_request.AuthToken = authToken
-	token_request.ExpiresAt = time.Now().Add(time.Minute * 60)
+	token_request.ExpiresAt = time.Now().Add(time.Hour * 24)
 	token_request.GeneratedAt = time.Now()
 	token_request.UserId = int(users.ID)
 	token_request.AuthType = "Bearer"
@@ -107,5 +107,55 @@ func (controler *authController) ValidateToken(c *gin.Context) {
 		},
 		"data":  token_,
 		"token": token,
+	})
+}
+
+func (controller *authController) Register(ctx *gin.Context) {
+	var user auth.UserRequest
+	err := ctx.BindJSON(&user)
+	user.Password, _ = hashPassword(user.Password)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid request Password",
+		})
+		return
+	}
+
+	users, err := controller.authService.Register(user)
+
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid request",
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"meta": gin.H{
+			"status":  true,
+			"message": "Success",
+		},
+		"data": users,
+	})
+
+}
+
+func (controller *authController) Logout(ctx *gin.Context) {
+	token := strings.Split(ctx.Request.Header.Get("Authorization"), "Bearer ")[1]
+
+	tokens, err := controller.authService.Destroy(token)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid Token",
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"meta": gin.H{
+			"status":  true,
+			"message": "Success",
+		},
+		"data": tokens,
 	})
 }
