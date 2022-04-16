@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"pustaka-api/book"
+	"pustaka-api/middleware"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -104,6 +105,7 @@ func (controller *bookController) PostBookHandler(c *gin.Context) {
 	// title, price
 	var BookInput book.BookRequest
 	err := c.ShouldBindJSON(&BookInput)
+	BookInput.UserId = middleware.UserId
 	if err != nil {
 		var errorMassages []string
 		for _, e := range err.(validator.ValidationErrors) {

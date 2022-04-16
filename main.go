@@ -19,9 +19,13 @@ func main() {
 		log.Fatal("DB connection error: ", err)
 	}
 
-	db.AutoMigrate(&entity.Book{})
-	db.AutoMigrate(&entity.User{})
-	db.AutoMigrate(&entity.AuthenticationToken{})
+	err = db.AutoMigrate(&entity.Loan{}, &entity.User{}, &entity.Book{}, &entity.AuthenticationToken{})
+	if err != nil {
+		db.DisableForeignKeyConstraintWhenMigrating = true
+		db.AutoMigrate(&entity.Loan{}, &entity.User{}, &entity.Book{}, &entity.AuthenticationToken{})
+		db.DisableForeignKeyConstraintWhenMigrating = false
+		db.AutoMigrate(&entity.Loan{}, &entity.User{}, &entity.Book{}, &entity.AuthenticationToken{})
+	}
 
 	routes.Router(db, router)
 	router.Run()

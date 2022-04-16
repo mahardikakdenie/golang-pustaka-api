@@ -15,7 +15,8 @@ type Book struct {
 	Rating      json.Number `json:"rating"`
 	Description string      `json:"description"`
 	UserId      int         `json:"author_id"`
-	User        User        `json:"author"`
+	User        User        `json:"author" gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	Loan        []Loan      `json:"loan" gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 	DeletedAt   *time.Time `json:"deleted_at"`

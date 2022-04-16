@@ -4,6 +4,7 @@ import (
 	"pustaka-api/auth"
 	"pustaka-api/book"
 	"pustaka-api/controller"
+	"pustaka-api/loan"
 	"pustaka-api/middleware"
 	"pustaka-api/user"
 
@@ -24,11 +25,16 @@ func Router(db *gorm.DB, router gin.IRouter) {
 	authService := auth.NewService(authRepository)
 	authController := controller.NewAuthController(authService)
 
+	LoanResitory := loan.NewRepository(db)
+	LoanService := loan.NewService(LoanResitory)
+	LoanController := controller.NewLoanController(LoanService)
+
 	middleware := middleware.MyMiddleware(authService)
 
 	v1 := router.Group("/v1")
 	book := v1.Group("/book").Use(middleware)
 	user := v1.Group("/user").Use(middleware)
+	loan := v1.Group("/loan").Use(middleware)
 	auth := v1.Group("/auth")
 
 	book.GET("/", bookController.Index)
@@ -46,4 +52,10 @@ func Router(db *gorm.DB, router gin.IRouter) {
 	auth.POST("/login", authController.Login)
 	auth.POST("/register", authController.Register)
 	auth.POST("/logout", authController.Logout)
+
+	loan.GET("/", LoanController.Index)
+	loan.POST("/", LoanController.Store)
+	loan.GET("/:id", LoanController.Show)
+	loan.PATCH("/:id", LoanController.Update)
+	loan.DELETE("/:id", LoanController.DeleteData)
 }

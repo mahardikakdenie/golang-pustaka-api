@@ -17,6 +17,8 @@ func NewAuthController(service auth.Service) *authController {
 	return &authController{service}
 }
 
+var UserId int
+
 func MyMiddleware(service auth.Service) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		tokens := strings.Split(ctx.Request.Header.Get("Authorization"), "Bearer ")[1]
@@ -34,6 +36,8 @@ func MyMiddleware(service auth.Service) gin.HandlerFunc {
 			ctx.Abort()
 			return
 		}
+
+		UserId = token_.UserId
 
 		if expiryTime.Before(currentTime) {
 			ctx.JSON(http.StatusUnauthorized, gin.H{
