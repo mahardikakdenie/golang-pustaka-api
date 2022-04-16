@@ -13,6 +13,7 @@ type BookResponse struct {
 	Rating      json.Number `json:"rating"`
 	Substitle   string      `json:"sub_title"`
 	Description string      `json:"description"`
+	UrlImage    string      `json:"url_image"`
 	UserId      int         `json:"author_id"`
 	User        entity.User `json:"author"`
 	CreatedAt   time.Time   `json:"created_at"`

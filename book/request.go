@@ -10,4 +10,5 @@ type BookRequest struct {
 	Rating      json.Number `json:"rating" binding:"required"`
 	Description string      `json:"description" binding:"required"`
 	UserId      int         `json:"user_id"`
+	UrlImage    string      `json:"file_upload"`
 }

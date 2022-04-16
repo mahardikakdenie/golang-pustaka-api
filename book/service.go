@@ -10,6 +10,7 @@ type Service interface {
 	Create(book BookRequest) (entity.Book, error)
 	Update(book BookRequest, id int) (entity.Book, error)
 	Destroy(id int) (entity.Book, error)
+	FileUpload(id int, url string) (entity.Book, error)
 }
 
 type service struct {
@@ -62,4 +63,13 @@ func (s *service) Destroy(id int) (entity.Book, error) {
 
 	return newBook, err
 
+}
+
+func (s *service) FileUpload(id int, url string) (entity.Book, error) {
+	books, _ := s.repository.FindById(id)
+	books.UrlImage = url
+
+	newBook, err := s.repository.FileUpload(books)
+
+	return newBook, err
 }

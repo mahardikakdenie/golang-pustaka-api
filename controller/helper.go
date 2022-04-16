@@ -21,6 +21,7 @@ func responses(books entity.Book) book.BookResponse {
 			Description: books.Description,
 			UserId:      int(books.UserId),
 			User:        books.User,
+			UrlImage:    books.UrlImage,
 			CreatedAt:   books.CreatedAt,
 			UpdatedAt:   books.UpdatedAt,
 		}
@@ -33,6 +34,7 @@ func responses(books entity.Book) book.BookResponse {
 			Substitle:   books.Substitle,
 			Description: books.Description,
 			UserId:      int(books.UserId),
+			UrlImage:    books.UrlImage,
 			CreatedAt:   books.CreatedAt,
 			UpdatedAt:   books.UpdatedAt,
 		}

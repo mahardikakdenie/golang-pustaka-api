@@ -3,8 +3,11 @@ package controller
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
+	"os"
 	"pustaka-api/book"
+	"pustaka-api/dot_env"
 	"pustaka-api/middleware"
 	"strconv"
 
@@ -260,4 +263,56 @@ func (controller *bookController) Destroy(c *gin.Context) {
 		"meta": meta,
 		"data": data,
 	})
+}
+
+func (controller *bookController) FileUpload(ctx *gin.Context) {
+	idString := ctx.Param("id")
+	id, _ := strconv.Atoi(idString)
+	file, header, err := ctx.Request.FormFile("file")
+	if err != nil {
+		var meta = gin.H{
+			"status":  false,
+			"message": "File not found",
+		}
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"meta": meta,
+			"data": gin.H{},
+		})
+		return
+	}
+
+	fileName := header.Filename
+	// make directory
+	out, err := os.Create("public/" + fileName)
+
+	if err != nil {
+		var meta = gin.H{
+			"status":  false,
+			"message": "File not found Public",
+		}
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"meta": meta,
+			"data": gin.H{},
+		})
+		return
+	}
+
+	defer out.Close()
+
+	_, err = io.Copy(out, file)
+
+	APP_URL := dot_env.GoDotEnvVariable("APP_URL")
+
+	filepath := APP_URL + fileName
+	data, err := controller.bookService.FileUpload(id, filepath)
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"meta": gin.H{
+			"status":  true,
+			"message": "File uploaded successfully",
+		},
+		"data": data,
+	})
+
+	// delete Path => os.remove(path)
 }

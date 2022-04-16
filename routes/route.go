@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"net/http"
 	"pustaka-api/auth"
 	"pustaka-api/book"
 	"pustaka-api/controller"
@@ -37,11 +38,14 @@ func Router(db *gorm.DB, router gin.IRouter) {
 	loan := v1.Group("/loan").Use(middleware)
 	auth := v1.Group("/auth")
 
+	router.StaticFS("/file", http.Dir("public")).Use(middleware)
+
 	book.GET("/", bookController.Index)
 	book.POST("/", bookController.PostBookHandler)
 	book.PATCH("/:id", bookController.Update)
 	book.GET("/:id", bookController.Show)
 	book.DELETE("/:id", bookController.Destroy)
+	book.POST("/:id/upload", bookController.FileUpload)
 
 	user.GET("/", userController.Index)
 	user.POST("/", userController.Create)
@@ -58,4 +62,5 @@ func Router(db *gorm.DB, router gin.IRouter) {
 	loan.GET("/:id", LoanController.Show)
 	loan.PATCH("/:id", LoanController.Update)
 	loan.DELETE("/:id", LoanController.DeleteData)
+
 }
