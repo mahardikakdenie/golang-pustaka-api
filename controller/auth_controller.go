@@ -112,7 +112,7 @@ func (controler *authController) ValidateToken(c *gin.Context) {
 
 func (controller *authController) Register(ctx *gin.Context) {
 	var user auth.UserRequest
-	err := ctx.BindJSON(&user)
+	err := ctx.ShouldBindJSON(&user)
 	user.Password, _ = hashPassword(user.Password)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
@@ -129,6 +129,8 @@ func (controller *authController) Register(ctx *gin.Context) {
 		})
 		return
 	}
+
+	defer ctx.Request.Body.Close()
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"meta": gin.H{
