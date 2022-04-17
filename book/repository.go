@@ -13,6 +13,7 @@ type Repository interface {
 	Update(book entity.Book) (entity.Book, error)
 	Destroy(book entity.Book) (entity.Book, error)
 	FileUpload(book entity.Book) (entity.Book, error)
+	ChangeImage(book entity.Book) (entity.Book, error)
 }
 
 type repository struct {
@@ -62,6 +63,12 @@ func (r *repository) Destroy(books entity.Book) (entity.Book, error) {
 }
 
 func (r *repository) FileUpload(books entity.Book) (entity.Book, error) {
+	err := r.db.Save(&books).Error
+
+	return books, err
+}
+
+func (r *repository) ChangeImage(books entity.Book) (entity.Book, error) {
 	err := r.db.Save(&books).Error
 
 	return books, err

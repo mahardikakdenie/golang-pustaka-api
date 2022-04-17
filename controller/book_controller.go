@@ -303,7 +303,7 @@ func (controller *bookController) FileUpload(ctx *gin.Context) {
 
 	APP_URL := dot_env.GoDotEnvVariable("APP_URL")
 
-	filepath := APP_URL + fileName
+	filepath := APP_URL + "/file" + fileName
 	data, err := controller.bookService.FileUpload(id, filepath)
 
 	ctx.JSON(http.StatusOK, gin.H{
@@ -315,4 +315,56 @@ func (controller *bookController) FileUpload(ctx *gin.Context) {
 	})
 
 	// delete Path => os.remove(path)
+}
+
+func (controller *bookController) ChangeImage(ctx *gin.Context) {
+	id := ctx.Param("id")
+	idInt, _ := strconv.Atoi(id)
+
+	file, header, err := ctx.Request.FormFile("file")
+	// if err != nil {
+	// 	var meta = gin.H{
+	// 		"status":  false,
+	// 		"message": "File not found",
+	// 	}
+	// 	ctx.JSON(http.StatusNotFound, gin.H{
+	// 		"meta": meta,
+	// 		"data": gin.H{},
+	// 	})
+	// 	return
+	// }
+	filename := header.Filename
+	out, err := os.Create("public/" + filename)
+	// if err != nil {
+	// 	var meta = gin.H{
+	// 		"status":  false,
+	// 		"message": "File not found Public",
+	// 	}
+	// 	ctx.JSON(http.StatusNotFound, gin.H{
+	// 		"meta": meta,
+	// 		"data": gin.H{},
+	// 	})
+	// 	return
+	// }
+	defer out.Close()
+	_, err = io.Copy(out, file)
+	APP_URL := dot_env.GoDotEnvVariable("APP_URL")
+	filepath := APP_URL + "/file" + filename
+	data, err := controller.bookService.ChangeImage(idInt, filepath)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"meta": gin.H{
+				"status":  false,
+				"message": "File not found Public",
+			},
+			"data": gin.H{},
+		})
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"meta": gin.H{
+			"status":  true,
+			"message": "File uploaded successfully",
+		},
+		"data": data,
+	})
 }

@@ -1,7 +1,9 @@
 package book
 
 import (
+	"os"
 	entity "pustaka-api/entity"
+	"strings"
 )
 
 type Service interface {
@@ -11,6 +13,7 @@ type Service interface {
 	Update(book BookRequest, id int) (entity.Book, error)
 	Destroy(id int) (entity.Book, error)
 	FileUpload(id int, url string) (entity.Book, error)
+	ChangeImage(id int, url string) (entity.Book, error)
 }
 
 type service struct {
@@ -70,6 +73,19 @@ func (s *service) FileUpload(id int, url string) (entity.Book, error) {
 	books.UrlImage = url
 
 	newBook, err := s.repository.FileUpload(books)
+
+	return newBook, err
+}
+
+func (s *service) ChangeImage(id int, url string) (entity.Book, error) {
+	books, _ := s.repository.FindById(id)
+
+	newString := strings.Split(books.UrlImage, "/")
+
+	err := os.Remove("public/" + newString[3])
+	books.UrlImage = url
+
+	newBook, err := s.repository.ChangeImage(books)
 
 	return newBook, err
 }

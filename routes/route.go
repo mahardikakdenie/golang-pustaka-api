@@ -46,6 +46,7 @@ func Router(db *gorm.DB, router gin.IRouter) {
 	book.GET("/:id", bookController.Show)
 	book.DELETE("/:id", bookController.Destroy)
 	book.POST("/:id/upload", bookController.FileUpload)
+	book.POST("/:id/change", bookController.ChangeImage)
 
 	user.GET("/", userController.Index)
 	user.POST("/", userController.Create)
